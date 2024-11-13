@@ -6,7 +6,7 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { Tops } from "../spotifyTopsModel.ts";
 
-console.log("Hello from Functions!");
+
 
 
 Deno.serve(async (req) => {
