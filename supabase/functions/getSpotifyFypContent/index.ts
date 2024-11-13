@@ -4,62 +4,10 @@
 
 // Setup type definitions for built-in Supabase Runtime APIs
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import { Tops } from "../spotifyTopsModel.ts";
 
 console.log("Hello from Functions!");
-type SpotifyResponse = {
-  href: string;
-  limit: number;
-  next: string | null;
-  offset: number;
-  previous: string | null;
-  total: number;
-  items: Array<{
-    album: {
-      album_type: string;
-      total_tracks: number;
-      available_markets: string[];
-      href: string;
-      id: string;
-      images: Array<
-        { url: string; height: number | null; width: number | null }
-      >;
-      name: string;
-      release_date: string;
-      release_date_precision: string;
-      type: string;
-      uri: string;
-      artists: Array<{
-        href: string;
-        id: string;
-        name: string;
-        type: string;
-        uri: string;
-      }>;
-    };
-    artists: Array<{
-      href: string;
-      id: string;
-      name: string;
-      type: string;
-      uri: string;
-    }>;
-    available_markets: string[];
-    disc_number: number;
-    duration_ms: number;
-    explicit: boolean;
-    href: string;
-    id: string;
-    is_playable: boolean;
-    name: string;
-    popularity: number;
-    preview_url: string | null;
-    track_number: number;
-    type: string;
-    uri: string;
-    is_local: boolean;
-    external_ids: { isrc: string };
-  }>;
-};
+
 // TrackItem interface
 
 Deno.serve(async (req) => {
@@ -82,22 +30,28 @@ Deno.serve(async (req) => {
       status: spotifyResponse.status,
     });
   }
-  const tops: SpotifyResponse = await spotifyResponse.json();
+const res: Tops = await spotifyResponse.json();
 
-  const names: string[] = tops.items.map((item) => item.name);
-  const artists: string[] = tops.items.map((item) => item.artists[0].name);
-  const images: string[] = tops.items.map((item) => item.album.images[0].url);
-  const albumNames: string[] = tops.items.map((item) => item.album.name);
-  const isrc = tops.items.map((item) => item.external_ids.isrc);
-  const combinedArray = names.map((name, index) => ({
-    name: name,
-    artist: artists[index],
-    image: images[index],
-    albumName: albumNames[index],
-    isrc: isrc[index],
-  }));
+  // Transform fonksiyonu ile yanıtı sadeleştiriyoruz
+  const transformTopsResponse = (res: Tops): Array<{
+    isrc: string;
+    name: string;
+    artist: string;
+    albumName: string;
+    image: string;
+  }> => {
+    return res.items.map((item) => {
+      const albumName = item.album.name;
+      const artist = item.artists[0].name; 
+      const name = item.name;
+      const image = item.album.images.length > 0 ? item.album.images[0].url : ""; // İlk resmi almak
+      const isrc = item.external_ids.isrc;
 
-  return new Response(JSON.stringify(combinedArray), {
+      return { isrc, name, artist, albumName, image };
+    });
+  };
+
+  return new Response(JSON.stringify(transformTopsResponse(res)), {
     status: 200,
     headers: { "Content-Type": "application/json" },
   });
