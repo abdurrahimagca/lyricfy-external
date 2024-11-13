@@ -8,7 +8,6 @@ import { Tops } from "../spotifyTopsModel.ts";
 
 console.log("Hello from Functions!");
 
-// TrackItem interface
 
 Deno.serve(async (req) => {
   const accessToken = await req.json().then((data) => {
@@ -32,7 +31,7 @@ Deno.serve(async (req) => {
   }
 const res: Tops = await spotifyResponse.json();
 
-  // Transform fonksiyonu ile yanıtı sadeleştiriyoruz
+ 
   const transformTopsResponse = (res: Tops): Array<{
     isrc: string;
     name: string;
@@ -44,7 +43,7 @@ const res: Tops = await spotifyResponse.json();
       const albumName = item.album.name;
       const artist = item.artists[0].name; 
       const name = item.name;
-      const image = item.album.images.length > 0 ? item.album.images[0].url : ""; // İlk resmi almak
+      const image = item.album.images.length > 0 ? item.album.images[0].url : ""; 
       const isrc = item.external_ids.isrc;
 
       return { isrc, name, artist, albumName, image };
